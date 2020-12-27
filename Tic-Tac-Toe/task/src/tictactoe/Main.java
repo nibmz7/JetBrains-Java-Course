@@ -1,17 +1,25 @@
 package tictactoe;
 
+import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        char[][] board = getInputBoard();
+        char[][] board = makeEmptyBoard();
         printBoard(board);
-        makeNextMove(board);
-        printBoard(board);
+        makeNextMove(board, 'X');
     }
 
-    private static void makeNextMove(char[][] board) {
+    private static char[][] makeEmptyBoard() {
+        char[][] board = new char[3][3];
+        Arrays.fill(board[0], '_');
+        Arrays.fill(board[1], '_');
+        Arrays.fill(board[2], '_');
+        return board;
+    }
+
+    private static void makeNextMove(char[][] board, char symbol) {
         Scanner scanner = new Scanner(System.in);
         int[] coordinates = new int[2];
         boolean success = false;
@@ -29,11 +37,14 @@ public class Main {
                 success = true;
             } catch (InputMismatchException e) {
                 System.out.println("You should enter numbers!");
+                scanner.nextLine();
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
         } while (!success);
-        board[coordinates[0]][coordinates[1]] = 'X';
+        board[coordinates[0]][coordinates[1]] = symbol;
+        printBoard(board);
+        checkBoardScores(board, symbol);
     }
 
     private static char[][] getInputBoard() {
@@ -63,8 +74,8 @@ public class Main {
         System.out.println("---------");
     }
 
-    private static int[] getBoardScores(char[][] board) {
-        int[] winner = {0, 0}; //X: false, O: false
+    private static void checkBoardScores(char[][] board, char currentSymbol) {
+        int[] winner = {0, 0};
 
         //isRowSame
         for (int i = 0; i < 3; i++) {
@@ -96,10 +107,21 @@ public class Main {
             else winner[1]++;
         }
 
-        return winner;
+        if (winner[0] > 0) {
+            System.out.println("X wins");
+        } else if (winner[1] > 0) {
+            System.out.println("O wins");
+        } else {
+            int[] movesCount = getMovesCount(board);
+            if (movesCount[2] == 0) {
+                System.out.println("Draw");
+            } else {
+                makeNextMove(board, currentSymbol == 'X' ? 'O' : 'X');
+            }
+        }
     }
 
-    private static int[] getBoardCount(char[][] board) {
+    private static int[] getMovesCount(char[][] board) {
         int[] count = {0, 0, 0};
 
         for (char[] row : board) {
